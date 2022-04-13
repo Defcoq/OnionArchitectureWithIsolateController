@@ -1,0 +1,62 @@
+services:
+  onionarchitecture.db:
+    container_name: onionarchitecture_db
+    environment:
+      POSTGRES_DB: onionarchitecture
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+    image: postgres:13.2
+    ports:
+    - published: 5432
+      target: 5432
+    volumes:
+    - C:\Workspace\Repo\donet\onion-architecture-aspnetcore\OnionArchitecutre\db:/var/lib/postgresql/data:rw
+  onionarchitecture.web:
+    build:
+      context: C:\Workspace\Repo\donet\onion-architecture-aspnetcore\OnionArchitecutre
+      dockerfile: Web/Dockerfile
+      labels:
+        com.microsoft.created-by: visual-studio
+        com.microsoft.visual-studio.project-name: Web
+      target: base
+    container_name: onionarchitecture_web
+    depends_on:
+      onionarchitecture.db:
+        condition: service_started
+    entrypoint: tail -f /dev/null
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_LOGGING__CONSOLE__DISABLECOLORS: "true"
+      ASPNETCORE_URLS: https://+:443;http://+:80
+      DOTNET_USE_POLLING_FILE_WATCHER: '1'
+      NUGET_FALLBACK_PACKAGES: /root/.nuget/fallbackpackages;/root/.nuget/fallbackpackages2;/root/.nuget/fallbackpackages3;/root/.nuget/fallbackpackages4
+    image: onionarchitectureweb:dev
+    labels:
+      com.microsoft.visualstudio.debuggee.arguments: ' --additionalProbingPath /root/.nuget/packages
+        --additionalProbingPath /root/.nuget/fallbackpackages --additionalProbingPath
+        /root/.nuget/fallbackpackages2 --additionalProbingPath /root/.nuget/fallbackpackages3
+        --additionalProbingPath /root/.nuget/fallbackpackages4  "/app/bin/Debug/net5.0/Web.dll"'
+      com.microsoft.visualstudio.debuggee.killprogram: /bin/sh -c "if PID=$$(pidof
+        dotnet); then kill $$PID; fi"
+      com.microsoft.visualstudio.debuggee.program: dotnet
+      com.microsoft.visualstudio.debuggee.workingdirectory: /app
+    ports:
+    - published: 5000
+      target: 80
+    - target: 80
+    - published: 5001
+      target: 443
+    - target: 443
+    tty: true
+    volumes:
+    - C:\Workspace\Repo\donet\onion-architecture-aspnetcore\OnionArchitecutre\Web:/app:rw
+    - C:\Users\jpierre.deffofotso\vsdbg\vs2017u5:/remote_debugger:rw
+    - C:\Users\jpierre.deffofotso\AppData\Roaming\ASP.NET\Https:/root/.aspnet/https:ro
+    - C:\Users\jpierre.deffofotso\AppData\Roaming\Microsoft\UserSecrets:/root/.microsoft/usersecrets:ro
+    - C:\Program Files (x86)\DevExpress 21.1\Components\Offline Packages:/root/.nuget/fallbackpackages:ro
+    - C:\Program Files (x86)\Microsoft Visual Studio\Shared\NuGetPackages:/root/.nuget/fallbackpackages2:ro
+    - C:\Program Files (x86)\Microsoft\Xamarin\NuGet:/root/.nuget/fallbackpackages3:ro
+    - C:\Program Files\dotnet\sdk\NuGetFallbackFolder:/root/.nuget/fallbackpackages4:ro
+    - C:\Users\jpierre.deffofotso\.nuget\packages:/root/.nuget/packages:ro
+    - C:\Workspace\Repo\donet\onion-architecture-aspnetcore\OnionArchitecutre:/src:rw
+version: '3.4'
